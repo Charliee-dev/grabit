@@ -45,4 +45,4 @@ ENV PORT=10000
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
