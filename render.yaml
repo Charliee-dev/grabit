@@ -8,8 +8,12 @@ services:
     # yt-dlp standalone Linux binary + ffmpeg from the ffmpeg-static optional
     # dependency (npm installs the platform-correct binary). Nothing paid.
     buildCommand: |-
+      set -e
       npm ci
-      npx yt-dlp --version
+      mkdir -p bin
+      curl -fsSL --retry 3 -o bin/yt-dlp_linux https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux
+      chmod +x bin/yt-dlp_linux
+      ./bin/yt-dlp_linux --version
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -26,7 +30,7 @@ services:
       - key: MAX_REDIRECTS
         value: "4"
       - key: YTDLP_PATH
-        value: /opt/render/project/src/backend/node_modules/yt-dlp/bin/yt-dlp
+        value: /opt/render/project/src/backend/bin/yt-dlp_linux
       # FFMPEG_PATH intentionally unset: the runner falls back to ffmpeg-static.
       - key: EXTRACT_TIMEOUT_MS
         value: "20000"
