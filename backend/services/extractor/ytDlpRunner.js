@@ -28,18 +28,21 @@ export function ffmpegAvailable() {
 }
 
 export async function ensureExtractorAvailable() {
+  if (!isExtractorConfigured()) {
+    throw extractorUnavailableError("extractor_not_configured");
+  }
   if (!availabilityPromise) {
     availabilityPromise = (async () => {
-      if (!isExtractorConfigured()) {
-        throw extractorUnavailableError("extractor_not_configured");
-      }
       try {
         await runExtractor(["--version"], { timeoutMs: 10_000 });
       } catch {
         throw extractorUnavailableError("extractor_unavailable");
       }
     })();
-    availabilityPromise.catch(() => {});
+    availabilityPromise.catch(() => {
+      // Reset the cached promise on failure so future calls can retry
+      availabilityPromise = null;
+    });
   }
   return availabilityPromise;
 }
