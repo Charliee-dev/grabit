@@ -8,9 +8,6 @@ on:
 permissions:
   contents: read
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 concurrency:
   group: github-pages
   cancel-in-progress: true
@@ -31,7 +28,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Prepare static frontend
         env:
@@ -56,6 +53,7 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: site
+          include-hidden-files: true
 
       - name: Deploy to GitHub Pages
         id: deployment
