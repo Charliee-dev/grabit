@@ -4,9 +4,13 @@ services:
     runtime: docker
     region: singapore
     plan: free
+
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
+    dockerCommand: node server.js
+
     healthCheckPath: /api/health
+
     envVars:
       - key: NODE_ENV
         value: production
@@ -15,4 +19,4 @@ services:
       - key: FFMPEG_PATH
         value: /usr/bin/ffmpeg
       - key: FFPROBE_PATH
-        value: /usr/bin/ffprobe
+        value: /usr/bin/ffprobe 
