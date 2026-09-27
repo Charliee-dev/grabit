@@ -36,8 +36,8 @@ console.log("=================================");
 console.log("Dependency check");
 
 try {
-  checkExecutable("yt-dlp", YTDLP_PATH);
-  checkExecutable("ffmpeg", FFMPEG_PATH);
+  checkExecutable("yt-dlp", YTDLP_PATH, ["--version"]);
+  checkExecutable("ffmpeg", FFMPEG_PATH, ["-version"]);
   console.log("[startup] All dependencies OK");
 } catch (error) {
   console.error("=================================");
