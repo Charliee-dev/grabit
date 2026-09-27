@@ -9,13 +9,14 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ffmpegAvailable, resetExtractorAvailabilityForTests } from "../services/extractor/ytDlpRunner.js";
-import { analyzeMedia, detectSource } from "../services/sources/index.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const localBinary = path.join(here, "..", "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp");
 const configuredBinary = process.env.YTDLP_PATH || (existsSync(localBinary) ? localBinary : "");
 if (configuredBinary) process.env.YTDLP_PATH = configuredBinary;
 const extractorReady = Boolean(configuredBinary && existsSync(configuredBinary));
+
+const { analyzeMedia, detectSource } = await import("../services/sources/index.js");
 
 test("extractor integration tests require the real binary", () => {
   assert.equal(

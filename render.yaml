@@ -1,34 +1,18 @@
 services:
   - type: web
     name: grabit-api
-    runtime: node
-    plan: free
+    runtime: docker
     region: singapore
-    rootDir: backend
-    # yt-dlp standalone Linux binary + ffmpeg from the ffmpeg-static optional
-    # dependency (npm installs the platform-correct binary). Nothing paid.
-    buildCommand: npm ci && bash scripts/install-ytdlp.sh
-    startCommand: npm start
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     healthCheckPath: /api/health
     envVars:
-      - key: HOST
-        value: 0.0.0.0
-      - key: FRONTEND_ORIGINS
-        sync: false
-      - key: MAX_FILE_SIZE_MB
-        value: "250"
-      - key: ANALYZE_TIMEOUT_MS
-        value: "12000"
-      - key: DOWNLOAD_TIMEOUT_MS
-        value: "30000"
-      - key: MAX_REDIRECTS
-        value: "4"
+      - key: NODE_ENV
+        value: production
       - key: YTDLP_PATH
-        value: /opt/render/project/src/backend/bin/yt-dlp_linux
-      # FFMPEG_PATH intentionally unset: the runner falls back to ffmpeg-static.
-      - key: EXTRACT_TIMEOUT_MS
-        value: "20000"
-      - key: EXTRACT_DOWNLOAD_TIMEOUT_MS
-        value: "300000"
-      - key: MAX_CONCURRENT_EXTRACTIONS
-        value: "1"
+        value: /usr/local/bin/yt-dlp
+      - key: FFMPEG_PATH
+        value: /usr/bin/ffmpeg
+      - key: FFPROBE_PATH
+        value: /usr/bin/ffprobe

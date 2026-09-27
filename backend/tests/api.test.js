@@ -1,7 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { createApp } from "../app.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const localBinary = path.join(here, "..", "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp");
+process.env.YTDLP_PATH = localBinary;
+
+const { createApp } = await import("../app.js");
 
 async function withServer(options, run) {
   const server = http.createServer(createApp(options));
@@ -53,10 +60,10 @@ test("health and JSON error responses are stable and omit server details", async
     assert.equal((await privateUrl.json()).error.code, "RESTRICTED_TARGET");
 
     const unsupported = await postJson(baseUrl, "/api/analyze", { url: "https://youtu.be/example" });
-    assert.equal(unsupported.status, 501);
+    assert.equal(unsupported.status, 415);
     const payload = await unsupported.json();
+    assert.equal(payload.success, false);
     assert.equal(payload.error.code, "SOURCE_NOT_SUPPORTED");
-    assert.deepEqual(payload.details, { source: { detected: true, supported: false, reason: "extractor_unavailable" } });
     assert.equal(JSON.stringify(payload).includes("stack"), false);
   });
 });

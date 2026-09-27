@@ -9,7 +9,7 @@ function readPositiveInteger(name, fallback, { minimum = 1, maximum = Number.MAX
   return value;
 }
 
-export const PORT = readPositiveInteger("PORT", 5001, { maximum: 65535 });
+export const PORT = readPositiveInteger("PORT", 10000, { maximum: 65535 });
 export const HOST = process.env.HOST || "0.0.0.0";
 export const MAX_FILE_SIZE_BYTES = readPositiveInteger("MAX_FILE_SIZE_MB", 250, { maximum: 500 }) * 1024 * 1024;
 export const ANALYZE_TIMEOUT_MS = readPositiveInteger("ANALYZE_TIMEOUT_MS", 12000, { maximum: 120000 });
@@ -23,13 +23,21 @@ export const FRONTEND_ORIGINS = (process.env.FRONTEND_ORIGINS || "http://localho
 
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { existsSync } from "node:fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Default to the bundled binary downloaded during the build. The Render-specific
-// path is set via YTDLP_PATH in render.yaml; local dev uses ./bin/yt-dlp.exe.
-export const YTDLP_PATH = process.env.YTDLP_PATH || path.join(__dirname, "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp_linux");
-export const FFMPEG_PATH = process.env.FFMPEG_PATH || "";
+// Resolve yt-dlp path: env var → Docker path → local binary
+const dockerYtdlpPath = "/usr/local/bin/yt-dlp";
+const localYtdlpPath = path.join(__dirname, "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp_linux");
+
+let resolvedYtdlpPath = process.env.YTDLP_PATH || dockerYtdlpPath;
+if (!process.env.YTDLP_PATH && !existsSync(dockerYtdlpPath) && existsSync(localYtdlpPath)) {
+  resolvedYtdlpPath = localYtdlpPath;
+}
+
+export const YTDLP_PATH = resolvedYtdlpPath;
+export const FFMPEG_PATH = process.env.FFMPEG_PATH || "/usr/bin/ffmpeg";
 export const EXTRACT_TIMEOUT_MS = readPositiveInteger("EXTRACT_TIMEOUT_MS", 20000, { maximum: 120000 });
 export const EXTRACT_DOWNLOAD_TIMEOUT_MS = readPositiveInteger("EXTRACT_DOWNLOAD_TIMEOUT_MS", 120000, { maximum: 600000 });
 export const MAX_CONCURRENT_EXTRACTIONS = readPositiveInteger("MAX_CONCURRENT_EXTRACTIONS", 2, { maximum: 8 });

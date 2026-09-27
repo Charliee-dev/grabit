@@ -6,9 +6,7 @@
   "engines": {
     "node": ">=20"
   },
-  "optionalDependencies": {
-    "ffmpeg-static": "^5.2.0"
-  },
+  "optionalDependencies": {},
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",

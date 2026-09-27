@@ -2,13 +2,20 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Readable, Writable } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { isPublicIp, parseHttpUrl, validatePublicUrl } from "../services/urlValidator.js";
-import { analyzeMedia, detectSource } from "../services/sources/index.js";
 import { validateMediaResponse } from "../services/sources/direct.js";
 import { createSizeLimiter, safeFilename, verifyDownloadResponse } from "../services/downloadService.js";
 import { requestOnce } from "../utils/safeHttpRequest.js";
 import { resetExtractorAvailabilityForTests } from "../services/extractor/ytDlpRunner.js";
 import { clearExtractorCacheForTests } from "../services/sources/extractor.js";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const localBinary = path.join(here, "..", "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp");
+process.env.YTDLP_PATH = localBinary;
+
+const { analyzeMedia, detectSource } = await import("../services/sources/index.js");
 
 test("accepts public HTTP URLs and rejects malformed, credentialed, and unsafe schemes", () => {
   assert.equal(parseHttpUrl("https://media.example.com/video.mp4").protocol, "https:");

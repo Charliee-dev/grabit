@@ -2,42 +2,51 @@ import "dotenv/config";
 import http from "node:http";
 import fs from "node:fs";
 import { spawnSync } from "node:child_process";
-import { HOST, PORT, YTDLP_PATH } from "./config.js";
+import { HOST, PORT, YTDLP_PATH, FFMPEG_PATH } from "./config.js";
 import { createApp } from "./app.js";
 
-// Startup verification: fail fast if yt-dlp is missing or broken.
-console.log("=================================");
-console.log("yt-dlp startup check");
-console.log("Path:", YTDLP_PATH);
-console.log("Exists:", fs.existsSync(YTDLP_PATH));
+function checkExecutable(name, executable, args = ["--version"]) {
+  console.log(`[startup] Checking ${name}`);
+  console.log(`[startup] Executable: ${executable}`);
 
-if (!fs.existsSync(YTDLP_PATH)) {
-  console.error("FATAL: yt-dlp binary not found at", YTDLP_PATH);
-  process.exit(1);
+  if (executable.startsWith("/")) {
+    if (!fs.existsSync(executable)) {
+      throw new Error(`${name} does not exist: ${executable}`);
+    }
+    try {
+      fs.accessSync(executable, fs.constants.X_OK);
+    } catch {
+      throw new Error(`${name} is not executable: ${executable}`);
+    }
+  }
+
+  const result = spawnSync(executable, args, { encoding: "utf8" });
+
+  if (result.error) {
+    throw new Error(`${name} could not be executed: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    throw new Error(`${name} exited with code ${result.status}: ${result.stderr || ""}`);
+  }
+
+  console.log(`[startup] ${name}: ${result.stdout.trim()}`);
 }
+
+console.log("=================================");
+console.log("Dependency check");
 
 try {
-  fs.accessSync(YTDLP_PATH, fs.constants.X_OK);
-} catch {
-  console.error("FATAL: yt-dlp is not executable");
+  checkExecutable("yt-dlp", YTDLP_PATH);
+  checkExecutable("ffmpeg", FFMPEG_PATH);
+  console.log("[startup] All dependencies OK");
+} catch (error) {
+  console.error("=================================");
+  console.error("FATAL DEPENDENCY ERROR");
+  console.error(error.message);
+  console.error("=================================");
   process.exit(1);
 }
 
-const ytdlpCheck = spawnSync(YTDLP_PATH, ["--version"], { encoding: "utf8" });
-
-if (ytdlpCheck.error) {
-  console.error("FATAL: Could not execute yt-dlp:", ytdlpCheck.error.message);
-  process.exit(1);
-}
-
-if (ytdlpCheck.status !== 0) {
-  console.error("FATAL: yt-dlp returned exit code", ytdlpCheck.status);
-  console.error(ytdlpCheck.stderr);
-  process.exit(1);
-}
-
-console.log("yt-dlp version:", ytdlpCheck.stdout.trim());
-console.log("yt-dlp is ready");
 console.log("=================================");
 
 const app = createApp();
