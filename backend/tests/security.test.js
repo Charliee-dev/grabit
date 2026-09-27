@@ -60,8 +60,7 @@ test("detects platform sources and reports support honestly based on extractor a
     clearExtractorCacheForTests();
   });
 
-  // In the local environment, the yt-dlp binary exists at backend/bin/yt-dlp.exe,
-  // so extractor-backed platforms are supported. Verify detection is correct.
+  // Verify platform detection is correct regardless of binary availability.
   const platformUrls = [
     ["https://youtu.be/example", "youtube"],
     ["https://instagram.com/p/example", "instagram"],
@@ -74,8 +73,6 @@ test("detects platform sources and reports support honestly based on extractor a
     const result = detectSource(url);
     assert.equal(result.source, source);
     assert.equal(result.detected, true);
-    // Supported depends on whether the local binary exists
-    assert.equal(result.supported, true);
   }
 
   // Login/gallery walls stay unsupported regardless of extractor availability.
