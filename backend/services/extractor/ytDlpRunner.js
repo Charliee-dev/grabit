@@ -179,7 +179,7 @@ function resolveFfmpegPath() {
   return cachedFfmpegPath;
 }
 
-function commonArgs(temporaryDirectory) {
+function commonArgs(temporaryDirectory, url) {
   const ffmpegPath = resolveFfmpegPath();
   const args = [
     "--no-playlist",
@@ -195,6 +195,18 @@ function commonArgs(temporaryDirectory) {
     "--paths", temporaryDirectory,
   ];
   if (ffmpegPath) args.push("--ffmpeg-location", ffmpegPath);
+
+  // Platform-specific options for sources that block generic requests.
+  if (url.includes("instagram.com")) {
+    args.push("--referer", "https://www.instagram.com/");
+  }
+  if (url.includes("tiktok.com")) {
+    args.push("--impersonate", "chrome");
+  }
+  if (url.includes("facebook.com") || url.includes("fb.watch")) {
+    args.push("--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+  }
+
   return args;
 }
 
@@ -204,7 +216,7 @@ export async function extractMediaInfo(url, { timeoutMs = EXTRACT_TIMEOUT_MS } =
     const temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), "grabit-x-"));
     try {
       const args = [
-        ...commonArgs(temporaryDirectory),
+        ...commonArgs(temporaryDirectory, url),
         "--dump-single-json",
         "--",
         url,
@@ -226,7 +238,7 @@ export async function downloadExtractedMedia(url, formatSelector, { timeoutMs = 
     const temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), "grabit-d-"));
     try {
       const args = [
-        ...commonArgs(temporaryDirectory),
+        ...commonArgs(temporaryDirectory, url),
         "--no-part",
         "--max-filesize", String(maxDownloadBytes()),
         "-f", formatSelector,
@@ -260,7 +272,7 @@ function maxDownloadBytes(env = process.env) {
 // Test hooks: the runner itself stays private and spawn-only.
 export function buildExtractArgsForTests(url, temporaryDirectory) {
   return [
-    ...commonArgs(temporaryDirectory),
+    ...commonArgs(temporaryDirectory, url),
     "--dump-single-json",
     "--",
     url,

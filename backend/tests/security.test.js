@@ -81,8 +81,15 @@ test("detects platform sources and reports support honestly based on extractor a
     source: "youtube", detected: true, supported: true,
   });
 
+  // Instagram, Facebook, and Pinterest are extractor-backed: supported when the
+  // extractor is available.
+  assert.deepEqual(detectSource("https://instagram.com/p/example"), { source: "instagram", detected: true, supported: true });
+  assert.deepEqual(detectSource("https://facebook.com/watch/example"), { source: "facebook", detected: true, supported: true });
+  assert.deepEqual(detectSource("https://pinterest.com/pin/1"), { source: "pinterest", detected: true, supported: true });
+
   // Login/gallery walls stay unsupported regardless of extractor availability.
-  assert.deepEqual(detectSource("https://instagram.com/p/example"), { source: "instagram", detected: true, supported: false });
+  assert.deepEqual(detectSource("https://reddit.com/r/example/comments/1"), { source: "reddit", detected: true, supported: false });
+  assert.deepEqual(detectSource("https://vimeo.com/12345"), { source: "vimeo", detected: true, supported: false });
 
   await assert.rejects(analyzeMedia("https://example.com/article"), { code: "UNSUPPORTED_SOURCE" });
   assert.deepEqual(detectSource("https://files.example/image.jpeg"), {

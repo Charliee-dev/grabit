@@ -31,6 +31,19 @@ test("detects YouTube as supported when the extractor is configured", () => {
   });
 });
 
+test("detects all extractor-backed platforms as supported", () => {
+  const platforms = [
+    ["https://www.instagram.com/p/EXAMPLE", "instagram"],
+    ["https://www.facebook.com/watch?v=EXAMPLE", "facebook"],
+    ["https://www.pinterest.com/pin/12345", "pinterest"],
+    ["https://x.com/example/status/12345", "x"],
+    ["https://www.tiktok.com/@example/video/12345", "tiktok"],
+  ];
+  for (const [url, source] of platforms) {
+    assert.deepEqual(detectSource(url), { source, detected: true, supported: true });
+  }
+});
+
 const ffmpegConfigured = ffmpegAvailable();
 
 test("real public YouTube video analyzes with real options", async () => {

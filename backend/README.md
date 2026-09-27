@@ -1,8 +1,23 @@
 # GrabIt API
 
-The API supports public, directly accessible media files. Platform sources run through a
+The API supports public, directly accessible media files and platform sources through a
 locally executed [yt-dlp](https://github.com/yt-dlp/yt-dlp) binary (Unlicense) using fixed
 argument arrays — no shell, no user-controlled flags, no credentials, no cookies.
+
+## Supported Platforms
+
+| Platform | Hosts | Notes |
+|---|---|---|
+| **YouTube** | youtube.com, youtu.be, googlevideo.com | Full support with ffmpeg merging |
+| **Instagram** | instagram.com | Public posts, reels, IGTV |
+| **Facebook** | facebook.com, fb.watch | Public videos |
+| **Pinterest** | pinterest.com, pin.it | Public pins with media |
+| **X (Twitter)** | x.com, twitter.com | Public tweets with media |
+| **TikTok** | tiktok.com | Public videos (uses browser impersonation) |
+| **Dailymotion** | dailymotion.com, dai.ly | Public videos |
+| **Direct Media** | any public URL | MP4, WebM, MKV, MP3, M4A, AAC, OGG, WAV, FLAC, JPG, PNG, WebP, GIF |
+
+**Honestly unsupported:** Reddit (IP-blocks datacenter requests), Vimeo (requires login).
 
 ## Setup
 
@@ -46,7 +61,7 @@ Returns a small JSON health response.
 
 Request: `{"url":"https://public.example/video.mp4"}`. A successful response includes the detected source label, URL-derived title, media type, real size when the origin reports one, and the real available options with the best one marked recommended. Unknown sources return `UNSUPPORTED_SOURCE`. Recognized but unavailable platforms return `SOURCE_NOT_SUPPORTED` with `supported: false`.
 
-Platform sources currently enabled: **YouTube** and **Dailymotion** (real formats verified), with **TikTok** and **X** enabled through the same extractor path. Sources detected but honestly unsupported: Instagram, Pinterest, Facebook (login/gallery walls), Vimeo (login-gated client), Reddit (extractor failure).
+Platform sources currently enabled: **YouTube**, **Instagram**, **Facebook**, **Pinterest**, **X (Twitter)**, **TikTok**, and **Dailymotion** — all through the same yt-dlp extractor path. Sources detected but honestly unsupported: Reddit (IP-blocked), Vimeo (login-gated).
 
 ### `POST /api/download`
 
@@ -62,7 +77,7 @@ The direct-media adapter accepts matching file extensions and exact supported MI
 - Child processes run under **hard timeouts**, output-size caps, a **concurrency limit**, and a download **byte ceiling** (`--max-filesize`).
 - Extraction writes only into a unique OS temporary directory that is removed in `finally` cleanup; `--no-cache-dir` prevents cache writes.
 - Error output is mapped to bounded, safe error codes; stack traces and local paths are never exposed.
-- Platform mode allows yt-dlp to orchestrate HLS/DASH segment downloads **only** inside the fixed host allowlist (YouTube, Dailymotion, TikTok, X); user-supplied direct-media URLs still flow exclusively through GrabIt's own SSRF-hardened fetcher as single files.
+- Platform mode allows yt-dlp to orchestrate HLS/DASH segment downloads **only** inside the fixed host allowlist (YouTube, Instagram, Facebook, Pinterest, X, TikTok, Dailymotion); user-supplied direct-media URLs still flow exclusively through GrabIt's own SSRF-hardened fetcher as single files.
 - No cookies, credentials, or browser impersonation are ever passed; login-gated content returns `PRIVATE_OR_PROTECTED`.
 
 ## Safety and operational limits

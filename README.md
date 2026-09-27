@@ -1,8 +1,23 @@
 # GrabIt
 
+A free media downloader for public content. Paste a link from YouTube, Instagram, Facebook, Pinterest, X (Twitter), TikTok, Dailymotion, or any direct media file URL — GrabIt analyzes it and lets you download in the best available quality.
+
 The API supports public, directly accessible media files. Platform sources run through a
 locally executed [yt-dlp](https://github.com/yt-dlp/yt-dlp) binary (Unlicense) using fixed
 argument arrays — no shell, no user-controlled flags, no credentials, no cookies.
+
+## Supported Platforms
+
+| Platform | What's Supported |
+|---|---|
+| **YouTube** | Video (up to 4K with ffmpeg), audio (MP3, M4A, Opus) |
+| **Instagram** | Posts, Reels, IGTV videos and images |
+| **Facebook** | Public videos and video audio |
+| **Pinterest** | Public pin videos and images |
+| **X (Twitter)** | Public tweet videos and audio |
+| **TikTok** | Public videos |
+| **Dailymotion** | Public videos |
+| **Direct Media** | MP4, WebM, MKV, MOV, MP3, M4A, AAC, OGG, WAV, FLAC, JPG, PNG, WebP, GIF |
 
 ## Deployment
 

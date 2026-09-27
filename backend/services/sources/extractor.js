@@ -16,8 +16,13 @@ const EXTRACTOR_HOSTS = new Map([
   ["tiktok.com", { id: "tiktok", label: "TikTok" }],
   ["x.com", { id: "x", label: "X" }],
   ["twitter.com", { id: "x", label: "X" }],
-  // Vimeo and Reddit are intentionally absent: verified limitations (login wall,
-  // extractor failure) keep them on dedicated unsupported stubs.
+  ["instagram.com", { id: "instagram", label: "Instagram" }],
+  ["facebook.com", { id: "facebook", label: "Facebook" }],
+  ["fb.watch", { id: "facebook", label: "Facebook" }],
+  ["pinterest.com", { id: "pinterest", label: "Pinterest" }],
+  ["pin.it", { id: "pinterest", label: "Pinterest" }],
+  // Reddit and Vimeo are intentionally absent: verified limitations (Reddit IP-blocks
+  // datacenter requests, Vimeo requires login) keep them on dedicated unsupported stubs.
 ]);
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
