@@ -53,10 +53,10 @@ test("health and JSON error responses are stable and omit server details", async
     assert.equal((await privateUrl.json()).error.code, "RESTRICTED_TARGET");
 
     const unsupported = await postJson(baseUrl, "/api/analyze", { url: "https://youtu.be/example" });
-    assert.equal(unsupported.status, 415);
+    assert.equal(unsupported.status, 501);
     const payload = await unsupported.json();
     assert.equal(payload.error.code, "SOURCE_NOT_SUPPORTED");
-    assert.deepEqual(payload.details, { source: "youtube", detected: true, supported: false });
+    assert.deepEqual(payload.details, { source: { detected: true, supported: false, reason: "extractor_unavailable" } });
     assert.equal(JSON.stringify(payload).includes("stack"), false);
   });
 });

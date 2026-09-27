@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import os from "node:os";
-import { EXTRACT_TIMEOUT_MS, EXTRACT_DOWNLOAD_TIMEOUT_MS, MAX_CONCURRENT_EXTRACTIONS } from "../../config.js";
+import { EXTRACT_TIMEOUT_MS, EXTRACT_DOWNLOAD_TIMEOUT_MS, MAX_CONCURRENT_EXTRACTIONS, YTDLP_PATH } from "../../config.js";
 import { AppError } from "../../utils/appError.js";
 
 const MAX_OUTPUT_BYTES = 12 * 1024 * 1024;
@@ -15,9 +15,8 @@ const MAX_BANDWIDTH = "25M";
 let availabilityPromise = null;
 
 export function isExtractorConfigured() {
-  const configuredPath = process.env.YTDLP_PATH || "";
-  if (!configuredPath) return false;
-  return existsSync(configuredPath);
+  if (!YTDLP_PATH) return false;
+  return existsSync(YTDLP_PATH);
 }
 
 export function resetExtractorAvailabilityForTests() {
