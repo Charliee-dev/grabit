@@ -1,25 +1,33 @@
 import { AppError } from "../../utils/appError.js";
 import { parseHttpUrl } from "../urlValidator.js";
 import direct from "./direct.js";
+import extractorAdapter, { extractorReady } from "./extractor.js";
 import facebook from "./facebook.js";
 import instagram from "./instagram.js";
 import pinterest from "./pinterest.js";
-import tiktok from "./tiktok.js";
-import x from "./x.js";
-import youtube from "./youtube.js";
+import reddit from "./reddit.js";
+import vimeo from "./vimeo.js";
 
-export const sourceAdapters = [youtube, instagram, pinterest, tiktok, facebook, x, direct];
+// Order matters: extractor-backed platform hosts first, then direct media files,
+// then honestly-unsupported platform stubs (login walls, gallery walls, verified
+// extractor failures).
+export const sourceAdapters = [extractorAdapter, direct, facebook, instagram, pinterest, vimeo, reddit];
 
+// Platform hosts stay "detected" either way, but they only claim support while the
+// extractor binary is actually configured. This keeps reporting honest in every
+// deployment: without yt-dlp the API reports detected-but-unsupported, never a
+// capability it cannot deliver.
 export function resolveSource(input) {
   const url = input instanceof URL ? parseHttpUrl(input.href) : parseHttpUrl(input);
-  const adapter = sourceAdapters.find((candidate) => candidate.canHandle(url)) || null;
+  const matched = sourceAdapters.find((candidate) => candidate.canHandle(url)) || null;
+  const extractorMissing = Boolean(matched?.requiresExtractor) && !extractorReady();
   return {
     url,
-    adapter,
+    adapter: extractorMissing ? null : matched,
     detection: {
-      id: adapter?.id || "unknown",
-      detected: Boolean(adapter),
-      supported: Boolean(adapter?.supported),
+      id: matched?.detectId?.(url) || matched?.id || "unknown",
+      detected: Boolean(matched),
+      supported: Boolean(matched?.supported) && !extractorMissing,
     },
   };
 }

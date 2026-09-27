@@ -27,18 +27,19 @@ Open <http://127.0.0.1:5500/>. The API listens at <http://127.0.0.1:5001/>. The 
 ## What works
 
 - Direct public media file links that use a recognized file extension and matching supported media `Content-Type`.
-- Original-file analysis and download for supported audio, video, and image content. The highest/only available option is marked **⭐ Recommended**; it is not a paid tier.
+- Platform videos from **YouTube** and **Dailymotion** (verified), with **TikTok** and **X** enabled through the same extraction engine, using a locally executed [yt-dlp](https://github.com/yt-dlp/yt-dlp) binary (Unlicense) with fixed argument arrays.
+- Real quality options only: progressive files, audio-only files, and — when ffmpeg is available — merged video options built from real streams. The best available option is marked **⭐ Recommended**; it is not a paid tier.
 - Image preview when the direct image URL is still publicly accessible.
 - File size and content type are checked during analysis and checked again during download. Downloaded files are streamed through unique temporary storage and removed after the response finishes or fails.
 - Browsers with the File System Access API stream downloads to the chosen file. Other browsers use a Blob download, which can temporarily use browser memory for larger files.
 
-The API does not manufacture resolutions, duration, thumbnails, or file sizes. Direct media only exposes the original file option. Platform pages such as YouTube, Instagram, Pinterest, TikTok, Facebook, and X are recognized by host and explicitly reported as detected but unsupported. No scraping, account access, DRM, paywall, private-content, or access-control bypass is implemented.
+The API does not manufacture resolutions, duration, thumbnails, or file sizes. Detected but honestly unsupported platforms: Instagram, Pinterest, Facebook (login/gallery walls), Vimeo (login-gated client), Reddit (extractor failure). No cookies, credentials, scraping of gated content, DRM, paywall, private-content, or access-control bypass is implemented or accepted.
 
 ## Configure a deployed API
 
 ## Deployment
 
-The [Render Blueprint](render.yaml) configures the API service. Create it from the connected GitHub repository and set `FRONTEND_ORIGINS` to the exact GitHub Pages origin (for example, `https://your-user.github.io`). Render provides `PORT`; the service binds to `0.0.0.0` and exposes `/api/health` as its health check.
+The [Render Blueprint](render.yaml) configures the API service and downloads the yt-dlp Linux binary during the build. Set `FRONTEND_ORIGINS` to the exact GitHub Pages origin (for example, `https://your-user.github.io`). Render provides `PORT`; the service binds to `0.0.0.0` and exposes `/api/health` as its health check. The extractor adds RAM and CPU load: the blueprint caps concurrent extractions at 1 for the free tier.
 
 The GitHub Pages workflow publishes only `index.html`, `styles.css`, `app.js`, and the generated `api-config.js`; it does not expose the backend files as site assets. Before the first Pages deployment, set the repository variable `GRABIT_API_BASE_URL` to the deployed API URL ending in `/api`, such as `https://grabit-api.onrender.com/api`. The workflow validates this HTTPS URL and embeds it in the static frontend. Local development keeps using the API default in [api-config.js](api-config.js).
 

@@ -20,3 +20,9 @@ export const FRONTEND_ORIGINS = (process.env.FRONTEND_ORIGINS || "http://localho
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+export const YTDLP_PATH = process.env.YTDLP_PATH || "";
+export const FFMPEG_PATH = process.env.FFMPEG_PATH || "";
+export const EXTRACT_TIMEOUT_MS = readPositiveInteger("EXTRACT_TIMEOUT_MS", 20000, { maximum: 120000 });
+export const EXTRACT_DOWNLOAD_TIMEOUT_MS = readPositiveInteger("EXTRACT_DOWNLOAD_TIMEOUT_MS", 120000, { maximum: 600000 });
+export const MAX_CONCURRENT_EXTRACTIONS = readPositiveInteger("MAX_CONCURRENT_EXTRACTIONS", 2, { maximum: 8 });

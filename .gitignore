@@ -2,6 +2,7 @@
 .env.*
 !.env.example
 **/node_modules/
+backend/bin/
 **/.tmp/
 **/.temp/
 **/tmp/

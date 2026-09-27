@@ -7,6 +7,8 @@ import { analyzeMedia, detectSource } from "../services/sources/index.js";
 import { validateMediaResponse } from "../services/sources/direct.js";
 import { createSizeLimiter, safeFilename, verifyDownloadResponse } from "../services/downloadService.js";
 import { requestOnce } from "../utils/safeHttpRequest.js";
+import { resetExtractorAvailabilityForTests } from "../services/extractor/ytDlpRunner.js";
+import { clearExtractorCacheForTests } from "../services/sources/extractor.js";
 
 test("accepts public HTTP URLs and rejects malformed, credentialed, and unsafe schemes", () => {
   assert.equal(parseHttpUrl("https://media.example.com/video.mp4").protocol, "https:");
@@ -42,7 +44,18 @@ test("blocks localhost and local IP URLs before making a request", async () => {
   await assert.rejects(validatePublicUrl("http://service.internal/video.mp4"), { code: "RESTRICTED_TARGET" });
 });
 
-test("detects planned platforms without claiming support", async () => {
+test("detects platform sources and reports support honestly based on extractor availability", async (t) => {
+  const originalPath = process.env.YTDLP_PATH;
+  t.after(() => {
+    if (originalPath === undefined) delete process.env.YTDLP_PATH;
+    else process.env.YTDLP_PATH = originalPath;
+    resetExtractorAvailabilityForTests();
+    clearExtractorCacheForTests();
+  });
+
+  // Without the extractor binary: platforms are detected but honestly unsupported.
+  delete process.env.YTDLP_PATH;
+  resetExtractorAvailabilityForTests();
   const platformUrls = [
     ["https://youtu.be/example", "youtube"],
     ["https://instagram.com/p/example", "instagram"],
@@ -54,12 +67,23 @@ test("detects planned platforms without claiming support", async () => {
   for (const [url, source] of platformUrls) {
     assert.deepEqual(detectSource(url), { source, detected: true, supported: false });
   }
-  assert.deepEqual(detectSource("https://youtube.com/watch/video.mp4"), {
-    source: "youtube", detected: true, supported: false,
-  });
   await assert.rejects(analyzeMedia("https://www.youtube.com/watch?v=example"), {
     code: "SOURCE_NOT_SUPPORTED",
   });
+
+  // With the extractor configured: extractor-backed hosts report supported.
+  // (Detection only checks that the binary path exists; process.execPath exists everywhere.)
+  process.env.YTDLP_PATH = process.execPath;
+  resetExtractorAvailabilityForTests();
+  clearExtractorCacheForTests();
+  assert.deepEqual(detectSource("https://youtu.be/example"), { source: "youtube", detected: true, supported: true });
+  assert.deepEqual(detectSource("https://youtube.com/watch/video.mp4"), {
+    source: "youtube", detected: true, supported: true,
+  });
+
+  // Login/gallery walls stay unsupported regardless of extractor availability.
+  assert.deepEqual(detectSource("https://instagram.com/p/example"), { source: "instagram", detected: true, supported: false });
+
   await assert.rejects(analyzeMedia("https://example.com/article"), { code: "UNSUPPORTED_SOURCE" });
   assert.deepEqual(detectSource("https://files.example/image.jpeg"), {
     source: "direct", detected: true, supported: true,

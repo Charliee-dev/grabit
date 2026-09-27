@@ -1,6 +1,8 @@
 # GrabIt API
 
-The API supports public, directly accessible media files only. Platform adapters detect YouTube, Instagram, Pinterest, TikTok, Facebook, and X URLs, but those sources remain unsupported until a permitted retrieval method is implemented and tested.
+The API supports public, directly accessible media files. Platform sources run through a
+locally executed [yt-dlp](https://github.com/yt-dlp/yt-dlp) binary (Unlicense) using fixed
+argument arrays — no shell, no user-controlled flags, no credentials, no cookies.
 
 ## Setup
 
@@ -13,6 +15,8 @@ npm run dev
 
 Use `npm start` for a non-watching local/production process. The API defaults to port `5001`. Keep the frontend on its separate static server (`node frontend-server.js` from the project root).
 
+To enable platform sources, point `YTDLP_PATH` at a yt-dlp binary. With `ffmpeg` (or the optional `ffmpeg-static` npm package) also available, DASH-only sources such as YouTube expose real merged video options; without it, only single-file formats are offered and the API reports honestly.
+
 ## Environment
 
 | Variable | Default | Purpose |
@@ -24,6 +28,11 @@ Use `npm start` for a non-watching local/production process. The API defaults to
 | `ANALYZE_TIMEOUT_MS` | `12000` | Total time allowed for direct-media analysis. |
 | `DOWNLOAD_TIMEOUT_MS` | `30000` | Total time allowed to retrieve a file from its source. |
 | `MAX_REDIRECTS` | `4` | Maximum redirects, with public-address validation repeated at each hop. |
+| `YTDLP_PATH` | _(empty)_ | Path to a yt-dlp binary. When unset, platform sources report `detected: true, supported: false`. |
+| `FFMPEG_PATH` | _(empty)_ | Path to ffmpeg. Falls back to the optional `ffmpeg-static` package. Enables merged video options for DASH-only sources. |
+| `EXTRACT_TIMEOUT_MS` | `20000` | Total time allowed for platform metadata extraction. |
+| `EXTRACT_DOWNLOAD_TIMEOUT_MS` | `120000` | Total time allowed for platform media retrieval (segments/merges take longer). |
+| `MAX_CONCURRENT_EXTRACTIONS` | `2` | Simultaneous yt-dlp child processes (a free-tier RAM guard). |
 
 Copy `.env.example` to `.env` and keep `.env` out of version control. For production, set `FRONTEND_ORIGINS` to the deployed frontend origin and set `HOST`/`PORT` to the hosting provider's requirements.
 
@@ -35,7 +44,9 @@ Returns a small JSON health response.
 
 ### `POST /api/analyze`
 
-Request: `{"url":"https://public.example/video.mp4"}`. A successful response includes the detected source label, URL-derived title, media type, real size when the origin reports one, and one `Original` option marked recommended. Unknown sources return `UNSUPPORTED_SOURCE`. Recognized platform pages return `SOURCE_NOT_SUPPORTED` and detection details with `supported: false`.
+Request: `{"url":"https://public.example/video.mp4"}`. A successful response includes the detected source label, URL-derived title, media type, real size when the origin reports one, and the real available options with the best one marked recommended. Unknown sources return `UNSUPPORTED_SOURCE`. Recognized but unavailable platforms return `SOURCE_NOT_SUPPORTED` with `supported: false`.
+
+Platform sources currently enabled: **YouTube** and **Dailymotion** (real formats verified), with **TikTok** and **X** enabled through the same extractor path. Sources detected but honestly unsupported: Instagram, Pinterest, Facebook (login/gallery walls), Vimeo (login-gated client), Reddit (extractor failure).
 
 ### `POST /api/download`
 
@@ -43,7 +54,16 @@ Request: `{"url":"https://public.example/video.mp4","optionId":"original-mp4"}`.
 
 ## Current direct media types
 
-The adapter accepts matching file extensions and exact supported MIME types for MP4/M4V, MOV, WebM, MKV, OGV, 3GP, AVI, MP3, M4A, AAC, OGG/OGA, WAV, FLAC, JPG/JPEG, PNG, WebP, and GIF. Other file types, generic web pages, mismatched MIME types, non-public resources, and non-standard ports are rejected. Original quality is the only option; the API does not transcode media or invent quality levels, titles, thumbnails, or durations.
+The direct-media adapter accepts matching file extensions and exact supported MIME types for MP4/M4V, MOV, WebM, MKV, OGV, 3GP, AVI, MP3, M4A, AAC, OGG/OGA, WAV, FLAC, JPG/JPEG, PNG, WebP, and GIF. Other file types, generic web pages, mismatched MIME types, non-public resources, and non-standard ports are rejected. Platform sources expose only formats the extractor actually reports: progressive single files, audio-only files, and — when ffmpeg is configured — merged video options built from real streams. The API does not transcode or invent quality levels, titles, thumbnails, or durations.
+
+## Extraction engine security model
+
+- The yt-dlp binary is spawned with a **fixed argument array**; the URL is the only user-influenced value, passed after `--` and never through a shell.
+- Child processes run under **hard timeouts**, output-size caps, a **concurrency limit**, and a download **byte ceiling** (`--max-filesize`).
+- Extraction writes only into a unique OS temporary directory that is removed in `finally` cleanup; `--no-cache-dir` prevents cache writes.
+- Error output is mapped to bounded, safe error codes; stack traces and local paths are never exposed.
+- Platform mode allows yt-dlp to orchestrate HLS/DASH segment downloads **only** inside the fixed host allowlist (YouTube, Dailymotion, TikTok, X); user-supplied direct-media URLs still flow exclusively through GrabIt's own SSRF-hardened fetcher as single files.
+- No cookies, credentials, or browser impersonation are ever passed; login-gated content returns `PRIVATE_OR_PROTECTED`.
 
 ## Safety and operational limits
 
