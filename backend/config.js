@@ -21,7 +21,14 @@ export const FRONTEND_ORIGINS = (process.env.FRONTEND_ORIGINS || "http://localho
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-export const YTDLP_PATH = process.env.YTDLP_PATH || "";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Default to the bundled binary downloaded during the build. The Render-specific
+// path is set via YTDLP_PATH in render.yaml; local dev uses ./bin/yt-dlp.exe.
+export const YTDLP_PATH = process.env.YTDLP_PATH || path.join(__dirname, "..", "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp_linux");
 export const FFMPEG_PATH = process.env.FFMPEG_PATH || "";
 export const EXTRACT_TIMEOUT_MS = readPositiveInteger("EXTRACT_TIMEOUT_MS", 20000, { maximum: 120000 });
 export const EXTRACT_DOWNLOAD_TIMEOUT_MS = readPositiveInteger("EXTRACT_DOWNLOAD_TIMEOUT_MS", 120000, { maximum: 600000 });

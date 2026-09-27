@@ -7,8 +7,7 @@ services:
     rootDir: backend
     # yt-dlp standalone Linux binary + ffmpeg from the ffmpeg-static optional
     # dependency (npm installs the platform-correct binary). Nothing paid.
-    buildCommand: |-
-      npm ci && mkdir -p bin && curl -fsSL --retry 3 -o bin/yt-dlp_linux https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux && chmod +x bin/yt-dlp_linux && ./bin/yt-dlp_linux --version
+    buildCommand: npm ci && bash scripts/install-ytdlp.sh
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:

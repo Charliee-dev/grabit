@@ -1,7 +1,9 @@
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-import { FRONTEND_ORIGINS } from "./config.js";
+import fs from "node:fs";
+import { spawnSync } from "node:child_process";
+import { FRONTEND_ORIGINS, YTDLP_PATH } from "./config.js";
 import { createAnalyzeRouter } from "./routes/analyze.js";
 import { createDownloadRouter } from "./routes/download.js";
 import { AppError, sendError } from "./utils/appError.js";
@@ -30,6 +32,25 @@ export function createApp({
 
   app.get("/api/health", (req, res) => {
     res.json({ success: true, service: "GrabIt API", status: "ok" });
+  });
+
+  app.get("/api/debug/ytdlp", (req, res) => {
+    const exists = fs.existsSync(YTDLP_PATH);
+    if (!exists) {
+      return res.status(500).json({ success: false, path: YTDLP_PATH, exists: false });
+    }
+    const result = spawnSync(YTDLP_PATH, ["--version"], { encoding: "utf8" });
+    let executable = false;
+    try { fs.accessSync(YTDLP_PATH, fs.constants.X_OK); executable = true; } catch { /* not executable */ }
+    res.json({
+      success: result.status === 0,
+      path: YTDLP_PATH,
+      exists: true,
+      executable,
+      version: result.stdout?.trim() || null,
+      error: result.error?.message || null,
+      stderr: result.stderr?.trim() || null,
+    });
   });
 
   app.use("/api/analyze", createAnalyzeRouter({ limit: analyzeLimit }));
