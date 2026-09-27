@@ -42,7 +42,7 @@ jobs:
             throw new Error('Set the HTTPS GRABIT_API_BASE_URL repository variable before deploying Pages.');
           }
           fs.mkdirSync('site', { recursive: true });
-          for (const file of ['index.html', 'styles.css', 'app.js']) {
+          for (const file of ['index.html', 'styles.css', 'app.js', 'favicon.svg']) {
             fs.copyFileSync(file, path.join('site', file));
           }
           fs.writeFileSync('site/api-config.js', `window.GRABIT_API_BASE_URL = ${JSON.stringify(apiBase)};\n`);
