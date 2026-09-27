@@ -3,6 +3,7 @@ services:
     name: grabit-api
     runtime: node
     plan: free
+    region: singapore
     rootDir: backend
     buildCommand: npm ci
     startCommand: npm start

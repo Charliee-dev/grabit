@@ -2,6 +2,9 @@
 
 GrabIt is a free, no-account utility for checking and downloading public direct media files. The approved dark interface stays separate from the Node.js API.
 
+Live frontend: <https://charliee-dev.github.io/grabit/>  
+API health: <https://grabit-api-yf49.onrender.com/api/health>
+
 ## Local development
 
 Use Node.js 20 or later. In one terminal, run the backend:
