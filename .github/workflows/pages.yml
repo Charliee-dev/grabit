@@ -1,0 +1,59 @@
+name: Deploy GrabIt frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: vars.GRABIT_API_BASE_URL != ''
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v6
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Prepare static frontend
+        env:
+          GRABIT_API_BASE_URL: ${{ vars.GRABIT_API_BASE_URL }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const apiBase = process.env.GRABIT_API_BASE_URL || '';
+          if (!/^https:\/\/[a-z0-9.-]+(?::\d+)?\/api$/i.test(apiBase)) {
+            throw new Error('Set the HTTPS GRABIT_API_BASE_URL repository variable before deploying Pages.');
+          }
+          fs.mkdirSync('site', { recursive: true });
+          for (const file of ['index.html', 'styles.css', 'app.js']) {
+            fs.copyFileSync(file, path.join('site', file));
+          }
+          fs.writeFileSync('site/api-config.js', `window.GRABIT_API_BASE_URL = ${JSON.stringify(apiBase)};\n`);
+          fs.writeFileSync('site/.nojekyll', '');
+          NODE
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

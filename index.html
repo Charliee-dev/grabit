@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101214">
+  <meta name="description" content="GrabIt checks public direct media links and shows available file options. Free to use, with no account required.">
+  <title>GrabIt — Simple media utility</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="api-config.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="GrabIt home">
+      <span class="brand-mark" aria-hidden="true">G</span>
+      <span>GrabIt</span>
+    </a>
+
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#supported">Sources</a>
+      <a href="#how">How it works</a>
+    </nav>
+
+    <span class="free-badge"><span class="free-dot" aria-hidden="true"></span>Free, always</span>
+  </header>
+
+  <main id="home">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> A simpler way to save media</p>
+        <h1 id="hero-title">Media you can access,<br><span>made easy to save.</span></h1>
+        <p class="intro">Paste a public media file link to check its available original quality. No account, no fuss.</p>
+      </div>
+
+      <form class="url-form" id="urlForm" novalidate>
+        <label class="sr-only" for="urlInput">Media URL</label>
+        <svg class="link-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M10.6 13.4a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.72 1.72M13.4 10.6a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.72-1.72" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <input id="urlInput" name="url" type="url" inputmode="url" autocomplete="url" autocapitalize="none" spellcheck="false" placeholder="Paste a media URL here" aria-describedby="urlHelp formMessage" required>
+        <button type="button" class="clear-button" id="clearBtn" aria-label="Clear link" hidden>Clear</button>
+        <button class="analyze-button" id="analyzeBtn" type="submit"><span>Analyze link</span><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </form>
+      <p class="url-help" id="urlHelp">Only public or directly accessible media. GrabIt is always free.</p>
+      <p class="form-message" id="formMessage" role="alert" hidden></p>
+
+      <div class="preview-notice" role="note">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <span>Only public, directly accessible media files are supported. GrabIt is always free.</span>
+      </div>
+    </section>
+
+    <section class="processing panel" id="processing" aria-labelledby="processingTitle" aria-live="polite" hidden>
+      <div class="section-kicker">ANALYSIS IN PROGRESS</div>
+      <h2 id="processingTitle">Checking your link</h2>
+      <p class="processing-intro" id="processingText">Looking for a directly accessible media file.</p>
+      <ol class="steps" aria-label="Analysis progress">
+        <li class="step" data-step="0"><span class="step-icon" aria-hidden="true">1</span><span>Link detected</span></li>
+        <li class="step-connector" aria-hidden="true"></li>
+        <li class="step" data-step="1"><span class="step-icon" aria-hidden="true">2</span><span>Analyzing content</span></li>
+        <li class="step-connector" aria-hidden="true"></li>
+        <li class="step" data-step="2"><span class="step-icon" aria-hidden="true">3</span><span>Finding media</span></li>
+        <li class="step-connector" aria-hidden="true"></li>
+        <li class="step" data-step="3"><span class="step-icon" aria-hidden="true">4</span><span>Preparing results</span></li>
+      </ol>
+    </section>
+
+    <section class="results panel" id="results" aria-labelledby="resultsHeading" hidden>
+      <div class="results-grid">
+        <div class="preview-column">
+          <div class="media-preview" role="img" aria-label="Media preview unavailable">
+            <div class="preview-content">
+              <span class="preview-placeholder-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="10" r="1.5" fill="currentColor"/><path d="m5 17 4.5-4 3.2 2.5 2.3-2 4 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span id="previewMessage">Preview is not available for this file.</span>
+            </div>
+            <span class="preview-label">MEDIA PREVIEW</span>
+          </div>
+          <div class="media-meta">
+            <span class="source-mark" aria-hidden="true">↗</span>
+            <div><strong id="sourceName">Public source</strong><span id="mediaTitle">Example media title</span></div>
+          </div>
+          <p class="access-note">GrabIt is designed for public or directly accessible media only. Private or protected links cannot be retrieved.</p>
+        </div>
+
+        <div class="quality-column">
+          <div class="quality-heading">
+            <div>
+              <p class="eyebrow" id="qualityEyebrow">AVAILABLE OPTIONS</p>
+              <h2 id="resultsHeading">Available file</h2>
+            </div>
+            <span class="quality-tag" id="qualityTag">Original file</span>
+          </div>
+
+          <div class="quality-list" id="qualityList" role="group" aria-label="Available media options"></div>
+
+          <div class="download-state" id="downloadState" role="status" aria-live="polite">
+            <span class="state-icon" aria-hidden="true">✓</span>
+            <div class="state-copy"><strong id="stateTitle">No file selected</strong><span id="stateText">Analyze a public media link to see its available file.</span></div>
+          </div>
+          <button class="download-button" id="downloadBtn" type="button" disabled aria-describedby="downloadHelp">Download</button>
+          <p class="download-help" id="downloadHelp">The file will be checked again before it is sent.</p>
+        </div>
+      </div>
+
+      <details class="message-guide">
+        <summary>What if a link cannot be processed?</summary>
+        <p>If GrabIt can't process a link, it will explain why in plain language:</p>
+        <ul>
+          <li><strong>Media not found</strong><span>Check the link and make sure the media is still public.</span></li>
+          <li><strong>Private or protected media</strong><span>GrabIt does not access private content or bypass access controls.</span></li>
+          <li><strong>File too large</strong><span>This direct file exceeds the current download limit.</span></li>
+          <li><strong>Temporary server issue</strong><span>Wait a moment, then try again.</span></li>
+          <li><strong>Download unavailable</strong><span>This option cannot be downloaded right now.</span></li>
+        </ul>
+      </details>
+    </section>
+
+    <section class="sources-section" id="supported" aria-labelledby="sourcesTitle">
+        <div class="sources-copy"><p class="eyebrow">SOURCE SUPPORT</p><h2 id="sourcesTitle">Direct media files</h2><p>Platform links can be recognized, but are not supported yet. Only public direct media files can be checked.</p></div>
+      <ul class="source-list" aria-label="Recognized but currently unsupported platforms">
+        <li>YouTube</li><li>Instagram</li><li>TikTok</li><li>Pinterest</li><li>Facebook</li><li>X</li>
+      </ul>
+    </section>
+
+    <section class="how-section" id="how" aria-labelledby="howTitle">
+      <div class="how-heading"><p class="eyebrow">HOW IT WORKS</p><h2 id="howTitle">Three clear steps.</h2></div>
+      <div class="how-grid">
+        <article class="how-card"><span class="how-number">01</span><h3>Paste a link</h3><p>Start with a public media link you can access.</p></article>
+        <article class="how-card"><span class="how-number">02</span><h3>Review an option</h3><p>See the original file option available for that link.</p></article>
+        <article class="how-card"><span class="how-number">03</span><h3>Save your media</h3><p>Download permitted media directly to your device.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="footer-brand" href="#home">GrabIt</a>
+    <span>Free to use · No account required</span>
+    <span>For public, directly accessible media only</span>
+  </footer>
+</body>
+</html>

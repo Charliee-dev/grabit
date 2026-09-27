@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: grabit-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: MAX_FILE_SIZE_MB
+        value: "250"
+      - key: ANALYZE_TIMEOUT_MS
+        value: "12000"
+      - key: DOWNLOAD_TIMEOUT_MS
+        value: "30000"
+      - key: MAX_REDIRECTS
+        value: "4"
