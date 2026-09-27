@@ -15,6 +15,7 @@ export function createApp({
   const allowedOrigins = new Set(frontendOrigins);
 
   app.disable("x-powered-by");
+  app.set("trust proxy", 1);
   app.use(helmet());
   app.use(cors({
     origin(origin, callback) {
